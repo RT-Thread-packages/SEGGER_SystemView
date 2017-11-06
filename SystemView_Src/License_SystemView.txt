@@ -30,4 +30,4 @@ To the maximum extent permitted by applicable law, in no event will SEGGER be li
 (b) If any provision in this agreement should be held illegal or unenforceable by a court having jurisdiction, such provision shall be modified to the extent necessary to render it enforceable without losing its intent, or severed from this agreement if no such modification is possible, and other provisions of this agreement shall remain in full force and effect.This agreement may be changed only by an amendment in writing, signed by both parties.
 (c) If any SEGGER  professional services are being provided, then such professional services are provided pursuant to the terms of a separate agreement.
 
-(c) 2004-2015 SEGGER Microcontroller GmbH & Co. KG
+(c) 2004-2017 SEGGER Microcontroller GmbH & Co. KG
