@@ -67,8 +67,11 @@ Revision: $Rev: 3735 $
 *
 **********************************************************************
 */
-#define SYSVIEW_EVENTID_OFFSET     (32u)
-
+#ifdef PKG_USING_SYSTEMVIEW
+	#define SYSVIEW_EVENTID_OFFSET      PKG_SYSVIEW_EVENTID_OFFSET
+#else
+	#define SYSVIEW_EVENTID_OFFSET     (32u)
+#endif
 #endif
 
 /*************************** End of file ****************************/

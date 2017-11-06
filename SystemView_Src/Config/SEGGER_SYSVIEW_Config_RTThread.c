@@ -63,48 +63,97 @@ extern unsigned int SystemCoreClock;
 *
 **********************************************************************
 */
+
 // The application name to be displayed in SystemViewer
 #ifndef   SYSVIEW_APP_NAME
-  #define SYSVIEW_APP_NAME        "RT-Thread Trace"
+	#ifndef PKG_USING_SYSTEMVIEW
+		#define SYSVIEW_APP_NAME        "RT-Thread Trace"
+	#else
+		#define SYSVIEW_APP_NAME        PKG_SYSVIEW_APP_NAME
+	#endif
 #endif
 
 // The target device name
 #ifndef   SYSVIEW_DEVICE_NAME
-  #define SYSVIEW_DEVICE_NAME     "Cortex-M4"
+	#ifndef PKG_USING_SYSTEMVIEW
+		#define SYSVIEW_DEVICE_NAME     "Cortex-M4"
+  	#else
+		#define SYSVIEW_DEVICE_NAME        PKG_SYSVIEW_DEVICE_NAME
+	#endif
 #endif
 
 // Frequency of the timestamp. Must match SEGGER_SYSVIEW_Conf.h
 #ifndef   SYSVIEW_TIMESTAMP_FREQ
-  #define SYSVIEW_TIMESTAMP_FREQ  (SystemCoreClock)
+	#ifndef PKG_USING_SYSTEMVIEW
+		#define SYSVIEW_TIMESTAMP_FREQ  (SystemCoreClock)
+  	#else
+		#if PKG_SYSVIEW_TIMESTAMP_FREQ == 0
+			#define SYSVIEW_TIMESTAMP_FREQ        (SystemCoreClock)
+		#else
+			#define SYSVIEW_TIMESTAMP_FREQ        (PKG_SYSVIEW_TIMESTAMP_FREQ)
+		#endif
+	#endif
 #endif
 
 // System Frequency. SystemcoreClock is used in most CMSIS compatible projects.
 #ifndef   SYSVIEW_CPU_FREQ
-  #define SYSVIEW_CPU_FREQ        (SystemCoreClock)
+	#ifndef PKG_USING_SYSTEMVIEW
+		#define SYSVIEW_CPU_FREQ        (SystemCoreClock)
+  	#else
+		#if PKG_SYSVIEW_CPU_FREQ == 0
+			#define SYSVIEW_CPU_FREQ        (SystemCoreClock)
+		#else
+			#define SYSVIEW_CPU_FREQ        (PKG_SYSVIEW_CPU_FREQ)
+		#endif
+	#endif
 #endif
 
 // The lowest RAM address used for IDs (pointers)
 #ifndef   SYSVIEW_RAM_BASE
-  #define SYSVIEW_RAM_BASE        (0x20000000)
-#endif
-
-#ifndef   SYSVIEW_SYSDESC0
-  #define SYSVIEW_SYSDESC0        "I#15=SysTick"
+	#ifndef PKG_USING_SYSTEMVIEW
+		#define SYSVIEW_RAM_BASE        (0x20000000)
+	#else
+		#define SYSVIEW_RAM_BASE      (PKG_SYSVIEW_RAM_BASE)
+	#endif
 #endif
 
 // Define as 1 if the Cortex-M cycle counter is used as SystemView timestamp. Must match SEGGER_SYSVIEW_Conf.h
 #ifndef   USE_CYCCNT_TIMESTAMP
-  #define USE_CYCCNT_TIMESTAMP    1
+	#ifndef PKG_USING_SYSTEMVIEW
+		#define USE_CYCCNT_TIMESTAMP    1
+  	#else
+		#ifdef PKG_SYSVIEW_USE_CYCCNT_TIMESTAMP
+			#define USE_CYCCNT_TIMESTAMP    1
+		#endif
+	#endif
+#endif
+
+
+
+#ifndef   SYSVIEW_SYSDESC0
+	#ifndef PKG_USING_SYSTEMVIEW
+		#define SYSVIEW_SYSDESC0        "I#15=SysTick"
+	#else
+		#define SYSVIEW_SYSDESC0        PKG_SYSVIEW_SYSDESC0
+	#endif
 #endif
 
 #ifndef   SYSVIEW_SYSDESC1
-  #define SYSVIEW_SYSDESC1      "I#53=IntUart1,I#77=IntEth0"
+	#ifdef PKG_USING_SYSTEMVIEW
+		#define SYSVIEW_SYSDESC1        PKG_SYSVIEW_SYSDESC1
+	#endif
 #endif
 
-//#ifndef   SYSVIEW_SYSDESC2
+#ifndef   SYSVIEW_SYSDESC2
+	#ifdef PKG_USING_SYSTEMVIEW
+		#define SYSVIEW_SYSDESC2       PKG_SYSVIEW_SYSDESC2
+	#endif
+#endif
 
-//  #define SYSVIEW_SYSDESC2      ""
-//#endif
+
+
+
+
 
 /*********************************************************************
 *
@@ -124,7 +173,7 @@ extern unsigned int SystemCoreClock;
 *    Sends SystemView description strings.
 */
 static void _cbSendSystemDesc(void) {
-  SEGGER_SYSVIEW_SendSysDesc("N="SYSVIEW_APP_NAME",O=RTThread,D="SYSVIEW_DEVICE_NAME);
+  SEGGER_SYSVIEW_SendSysDesc("N="SYSVIEW_APP_NAME",O=RT-Thread,D="SYSVIEW_DEVICE_NAME);
 #ifdef SYSVIEW_SYSDESC0
   SEGGER_SYSVIEW_SendSysDesc(SYSVIEW_SYSDESC0);
 #endif
