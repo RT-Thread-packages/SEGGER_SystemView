@@ -79,14 +79,15 @@ static void _cbSendTaskInfo(const rt_thread_t thread)
     rt_exit_critical();
 }
 
-extern struct rt_object_information rt_object_container[];
-
 static void _cbSendTaskList(void)
 {
     struct rt_thread* thread;
     struct rt_list_node* node;
-    struct rt_list_node* list =
-        &rt_object_container[RT_Object_Class_Thread].object_list;
+    struct rt_list_node* list;
+    struct rt_object_information *info;
+
+    info = rt_object_get_information(RT_Object_Class_Thread);
+    list = &info->object_list;
 
     tidle = rt_thread_idle_gethandler();
 
