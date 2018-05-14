@@ -52,8 +52,8 @@ Revision: $Rev: 3745 $
 #include "SEGGER_SYSVIEW.h"
 #include "SEGGER_RTT.h"
 
-#ifndef RT_USING_HOOK
-#error "SystemView is only works when feature RT_USING_HOOK is enable."
+#ifndef PKG_USING_SYSTEMVIEW
+#error "SystemView is only works when feature PKG_USING_SYSTEMVIEW is enable."
 #endif
 static rt_thread_t tidle;
 
@@ -167,6 +167,84 @@ static void _cb_object_detach(struct rt_object* object)
     }
 }
 
+void SEGGER_SYSVIEW_RecordObjectName(unsigned EventID, struct rt_object *object) 
+{
+	U8  aPacket[SEGGER_SYSVIEW_INFO_SIZE + 4 * SEGGER_SYSVIEW_QUANTA_U32];
+	U8* pPayload;
+
+	pPayload = SEGGER_SYSVIEW_PREPARE_PACKET(aPacket);				  		// Prepare the packet for SystemView
+	pPayload = SEGGER_SYSVIEW_EncodeString(pPayload, object->name, RT_NAME_MAX);	// Add object name
+
+	SEGGER_SYSVIEW_SendPacket(&aPacket[0], pPayload, EventID);			  	// Send the packet
+}
+
+static void _cb_object_trytake(struct rt_object *object)
+{
+    switch (object->type & (~RT_Object_Class_Static))
+    {
+    case RT_Object_Class_Semaphore:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_SEM_TRYTAKE, object);
+        break;
+    case RT_Object_Class_Mutex:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MUTEX_TRYTAKE, object);
+        break;
+    case RT_Object_Class_Event:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_EVENT_TRYTAKE, object);
+        break;
+    case RT_Object_Class_MailBox:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MAILBOX_TRYTAKE, object);
+        break;
+    case RT_Object_Class_MessageQueue:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_QUEUE_TRYTAKE, object);
+        break;
+    }
+}
+
+
+static void _cb_object_take(struct rt_object *object)
+{
+    switch (object->type & (~RT_Object_Class_Static))
+    {
+    case RT_Object_Class_Semaphore:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_SEM_TAKEN, object);
+        break;
+    case RT_Object_Class_Mutex:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MUTEX_TAKEN, object);
+        break;
+    case RT_Object_Class_Event:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_EVENT_TAKEN, object);
+        break;
+    case RT_Object_Class_MailBox:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MAILBOX_TAKEN, object);
+        break;
+    case RT_Object_Class_MessageQueue:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_QUEUE_TAKEN, object);
+        break;
+    }
+}
+
+static void _cb_object_put(struct rt_object *object)
+{
+    switch (object->type & (~RT_Object_Class_Static))
+    {
+    case RT_Object_Class_Semaphore:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_SEM_RELEASE, object);
+        break;
+    case RT_Object_Class_Mutex:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MUTEX_RELEASE, object);
+        break;
+    case RT_Object_Class_Event:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_EVENT_RELEASE, object);
+        break;
+    case RT_Object_Class_MailBox:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MAILBOX_RELEASE, object);
+        break;
+    case RT_Object_Class_MessageQueue:
+        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_QUEUE_RELEASE, object);
+        break;
+    }
+}
+
 // Services provided to SYSVIEW by RT-Thread
 const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI = {
     _cbGetTime, _cbSendTaskList,
@@ -182,7 +260,10 @@ static int rt_trace_init(void)
     // register hooks
     rt_object_attach_sethook(_cb_object_attach);
     rt_object_detach_sethook(_cb_object_detach);
-
+    rt_object_trytake_sethook(_cb_object_trytake);
+    rt_object_take_sethook(_cb_object_take);
+    rt_object_put_sethook(_cb_object_put);
+    
     rt_thread_suspend_sethook(_cb_thread_suspend);
     rt_thread_resume_sethook(_cb_thread_resume);
 
