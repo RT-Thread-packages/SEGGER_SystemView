@@ -167,7 +167,7 @@ static void _cb_object_detach(struct rt_object* object)
     }
 }
 
-void SEGGER_SYSVIEW_RecordObjectName(unsigned EventID, struct rt_object *object) 
+void SEGGER_SYSVIEW_RecordObject(unsigned EventID, struct rt_object *object) 
 {
 	U8  aPacket[SEGGER_SYSVIEW_INFO_SIZE + 4 * SEGGER_SYSVIEW_QUANTA_U32];
 	U8* pPayload;
@@ -175,6 +175,9 @@ void SEGGER_SYSVIEW_RecordObjectName(unsigned EventID, struct rt_object *object)
 	pPayload = SEGGER_SYSVIEW_PREPARE_PACKET(aPacket);				  		// Prepare the packet for SystemView
 	pPayload = SEGGER_SYSVIEW_EncodeString(pPayload, object->name, RT_NAME_MAX);	// Add object name
 
+    if ((object->type & (~RT_Object_Class_Static)) == RT_Object_Class_Event)
+        pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, ((rt_event_t)object)->set);
+    
 	SEGGER_SYSVIEW_SendPacket(&aPacket[0], pPayload, EventID);			  	// Send the packet
 }
 
@@ -183,19 +186,19 @@ static void _cb_object_trytake(struct rt_object *object)
     switch (object->type & (~RT_Object_Class_Static))
     {
     case RT_Object_Class_Semaphore:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_SEM_TRYTAKE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_SEM_TRYTAKE, object);
         break;
     case RT_Object_Class_Mutex:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MUTEX_TRYTAKE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_MUTEX_TRYTAKE, object);
         break;
     case RT_Object_Class_Event:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_EVENT_TRYTAKE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_EVENT_TRYTAKE, object);
         break;
     case RT_Object_Class_MailBox:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MAILBOX_TRYTAKE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_MAILBOX_TRYTAKE, object);
         break;
     case RT_Object_Class_MessageQueue:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_QUEUE_TRYTAKE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_QUEUE_TRYTAKE, object);
         break;
     }
 }
@@ -206,19 +209,19 @@ static void _cb_object_take(struct rt_object *object)
     switch (object->type & (~RT_Object_Class_Static))
     {
     case RT_Object_Class_Semaphore:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_SEM_TAKEN, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_SEM_TAKEN, object);
         break;
     case RT_Object_Class_Mutex:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MUTEX_TAKEN, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_MUTEX_TAKEN, object);
         break;
     case RT_Object_Class_Event:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_EVENT_TAKEN, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_EVENT_TAKEN, object);
         break;
     case RT_Object_Class_MailBox:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MAILBOX_TAKEN, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_MAILBOX_TAKEN, object);
         break;
     case RT_Object_Class_MessageQueue:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_QUEUE_TAKEN, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_QUEUE_TAKEN, object);
         break;
     }
 }
@@ -228,19 +231,19 @@ static void _cb_object_put(struct rt_object *object)
     switch (object->type & (~RT_Object_Class_Static))
     {
     case RT_Object_Class_Semaphore:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_SEM_RELEASE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_SEM_RELEASE, object);
         break;
     case RT_Object_Class_Mutex:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MUTEX_RELEASE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_MUTEX_RELEASE, object);
         break;
     case RT_Object_Class_Event:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_EVENT_RELEASE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_EVENT_RELEASE, object);
         break;
     case RT_Object_Class_MailBox:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_MAILBOX_RELEASE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_MAILBOX_RELEASE, object);
         break;
     case RT_Object_Class_MessageQueue:
-        SEGGER_SYSVIEW_RecordObjectName(RTT_TRACE_ID_QUEUE_RELEASE, object);
+        SEGGER_SYSVIEW_RecordObject(RTT_TRACE_ID_QUEUE_RELEASE, object);
         break;
     }
 }

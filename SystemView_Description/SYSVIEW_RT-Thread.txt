@@ -30,8 +30,8 @@ TaskState 0xFC 0=Ready, 8=Wait for event, 16=Wait for sema zero, 24=Waiting, 32=
 53        mutex_release             Release Lock=%s
 54        OS_SignalEvent            Task=%t EventMask=%b
 55        OS_ClearEvents            Task=%t                                     | Returns %b
-61        event_tryrecv             Try Recv Event=%s
-62        event_recv                Recved Event=%s
+61        event_tryrecv             Try Recv Event=%s Event=%p
+62        event_recv                Recved Event=%s Event=%p
 63        event_send                Send Event=%s Event=%p
 64        OS_DeleteMB               MB=%p
 65        OS_PutMail                MB=%p Mail=%p
