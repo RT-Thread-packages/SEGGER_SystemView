@@ -274,8 +274,19 @@ static int rt_trace_init(void)
 
     rt_interrupt_enter_sethook(_cb_irq_enter);
     rt_interrupt_leave_sethook(_cb_irq_leave);
+    
+    rt_kprintf("RTT Control Block Detection Address is 0x%x\n", &_SEGGER_RTT);
+    
     return 0;
 }
 INIT_COMPONENT_EXPORT(rt_trace_init);
 
+int rtt_show_address(int argc, char **argv)
+{
+    rt_kprintf("RTT Control Block Detection Address is 0x%x\n", &_SEGGER_RTT);
+    return RT_EOK;
+}
+#ifdef FINSH_USING_MSH
+FINSH_FUNCTION_EXPORT_ALIAS(rtt_show_address, __cmd_rtt_show_address, Show RTT Control Block Address.);
+#endif
 /*************************** End of file ****************************/
