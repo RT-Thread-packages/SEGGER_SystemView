@@ -10,6 +10,6 @@ src += Glob(src_folder +'/SEGGER/*.c')
 
 CPPPATH = [cwd, os.path.join(cwd, src_folder+'/Config')]
 CPPPATH += [cwd, os.path.join(cwd, src_folder+'/SEGGER')]
-group = DefineGroup('trace', src, depend = ['RT_USING_HOOK'], CPPPATH = CPPPATH)
+group = DefineGroup('trace', src, depend = ['PKG_USING_SYSTEMVIEW'], CPPPATH = CPPPATH)
 
 Return('group')

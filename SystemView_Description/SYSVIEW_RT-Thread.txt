@@ -15,8 +15,9 @@ TaskState 0xFC 0=Ready, 8=Wait for event, 16=Wait for sema zero, 24=Waiting, 32=
 # API Functions
 #
 35        OS_CheckTimer             pGlobal=%p
-42        OS_Delay                  Delay=%u
-43        OS_DelayUntil             Time=%u
+41        sem_trytake               Try Take Sem=%s
+42        sem_take                  Taken Sem=%s
+43        sem_release               Release Sem=%s
 44        OS_SetPriority            Task=%t Pri=%u
 45        OS_WakeTask               Task=%t
 46        OS_CreateTask             Task=%t Pri=%u Stack=%p Size=%u
@@ -24,30 +25,31 @@ TaskState 0xFC 0=Ready, 8=Wait for event, 16=Wait for sema zero, 24=Waiting, 32=
 48        OS_Suspend                Task=%t
 49        OS_Resume                 Task=%t
 50        OS_CreateTaskEx           Task=%t Pri=%u Stack=%p Size=%u Context=%p
-51        OS_Yield
-52        OS_WaitEvent              EventMask=%b                                | Returns %b
-53        OS_WaitEventTimed         EventMask=%b Timeout=%u                     | Returns %b
+51        mutex_trytake             Try Take Lock=%s
+52        mutex_take                Taken Lock=%s
+53        mutex_release             Release Lock=%s
 54        OS_SignalEvent            Task=%t EventMask=%b
 55        OS_ClearEvents            Task=%t                                     | Returns %b
-62        OS_CreateMB               MB=%p MsgSize=%u Max=%u Addr=%p
-63        OS_ClearMB                MB=%p
+61        event_tryrecv             Try Recv Event=%s Event=%p
+62        event_recv                Recved Event=%s Event=%p
+63        event_send                Send Event=%s Event=%p
 64        OS_DeleteMB               MB=%p
 65        OS_PutMail                MB=%p Mail=%p
 66        OS_GetMail                MB=%p Dest=%p
 67        OS_PutMailCond            MB=%p Mail=%p                               | Returns %u
 68        OS_GetMailCond            MB=%p Dest=%p                               | Returns %u
 70        OS_GetMailTimed           MB=%p Dest=%p Timeout=%u                    | Returns %u
-71        OS_WaitMail               MB=%p
-72        OS_PutMail1               MB=%p Data=%u
-73        OS_GetMail1               MB=%p Dest=%p
+71        mailbox_tryrecv           Try Recv Mail from Box=%s
+72        mailbox_recv              Recved Mail from Box=%s
+73        mailbox_send              Send Mail to Box=%s
 74        OS_PutMailCond1           MB=%p Data=%u                               | Returns %u
 75        OS_GetMailCond1           MB=%p Data=%p                               | Returns %u
 78        OS_PutMailFront           MB=%p Mail=%p
 79        OS_PutMailFront1          MB=%p Data=%u
 80        OS_PutMailFrontCond       MB=%p Mail=%p                               | Returns %u
-81        OS_PutMailFrontCond1      MB=%p Data=%c                               | Returns %u
-82        OS_CreateRSema            Sema=%p
-83        OS_Use                    Sema=%I                                     | Returns %u
+81        msgq_tryrecv              Try Recv Msg from Queue=%s
+82        msgq_recv                 Recved Msg from Queue=%s
+83        msgq_send                 Send Msg to Queue=%s
 84        OS_Unuse                  Sema=%I
 85        OS_Request                Sema=%p                                     | Returns %u
 86        OS_GetSemaValue           Sema=%p                                     | Returns %u
