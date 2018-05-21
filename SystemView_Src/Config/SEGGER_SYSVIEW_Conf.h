@@ -142,7 +142,7 @@ Revision: $Rev: 6249 $
 		#define SEGGER_SYSVIEW_USE_STATIC_BUFFER 1
 	#endif
 	
-	#ifdef PKG_SEGGER_SYSVIEW_RTT_CHANNEL   
+	#ifdef PKG_SEGGER_SYSVIEW_POST_MORTEM_MODE   
 		#define SEGGER_SYSVIEW_POST_MORTEM_MODE 1
 	#endif
 #endif
