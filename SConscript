@@ -6,6 +6,9 @@ src_folder = 'SystemView_Src'
 
 cwd = GetCurrentDir()
 src = Glob(src_folder +'/Config/*.c')
+if not GetDepend('PKG_SEGGER_RTT_AS_SERIAL_DEVICE'):
+    SrcRemove(src, [src_folder + '/Config/SEGGER_RTT_Device.c'])
+
 src += Glob(src_folder +'/SEGGER/*.c')
 
 CPPPATH = [cwd, os.path.join(cwd, src_folder+'/Config')]
