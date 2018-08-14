@@ -175,7 +175,7 @@ static void _cb_object_detach(struct rt_object* object)
     switch(object->type)
     {
     case RT_Object_Class_Thread:
-        SEGGER_SYSVIEW_OnTaskStopExec();
+        SEGGER_SYSVIEW_OnTaskTerminate((unsigned)object);
         break;
     default:
         break;
