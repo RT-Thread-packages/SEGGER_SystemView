@@ -142,7 +142,11 @@ static void _cb_irq_leave(void)
     else
         SEGGER_SYSVIEW_OnTaskStartExec((unsigned)current);
 }
-
+static void _cb_thread_inited(rt_thread_t thread)
+{
+    SEGGER_SYSVIEW_OnTaskCreate((rt_uint32_t)thread);
+    _cbSendTaskInfo((rt_thread_t)thread);
+}
 static void _cb_object_attach(struct rt_object* object)
 {
     switch(object->type)
@@ -269,7 +273,7 @@ static int rt_trace_init(void)
     
     rt_thread_suspend_sethook(_cb_thread_suspend);
     rt_thread_resume_sethook(_cb_thread_resume);
-
+    rt_thread_inited_sethook(_cb_thread_inited);
     rt_scheduler_sethook(_cb_scheduler);
 
     rt_interrupt_enter_sethook(_cb_irq_enter);
