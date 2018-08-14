@@ -121,7 +121,15 @@ static void _cb_scheduler(rt_thread_t from, rt_thread_t to)
     if(to == tidle)
         SEGGER_SYSVIEW_OnIdle();
     else
-        SEGGER_SYSVIEW_OnTaskStartExec((unsigned)to);
+    {
+        if(rt_interrupt_get_nest())
+        {
+            SEGGER_SYSVIEW_OnTaskStartReady((unsigned)to);
+            SEGGER_SYSVIEW_RecordEnterISR();
+        }
+        else
+            SEGGER_SYSVIEW_OnTaskStartExec((unsigned)to);
+    }
 }
 
 static void _cb_irq_enter(void)
