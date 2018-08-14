@@ -61,7 +61,10 @@ static U64 _cbGetTime(void)
 {
     return (U64)(rt_tick_get() * 1000 / RT_TICK_PER_SECOND);
 }
-
+static void _cb_timer_timeout(rt_timer_t t)
+{
+    SEGGER_SYSVIEW_RecordEnterTimer((rt_uint32_t)t);
+}
 static void _cbSendTaskInfo(const rt_thread_t thread)
 {
     SEGGER_SYSVIEW_TASKINFO Info;
@@ -276,6 +279,8 @@ static int rt_trace_init(void)
     rt_thread_inited_sethook(_cb_thread_inited);
     rt_scheduler_sethook(_cb_scheduler);
 
+    rt_timer_timeout_sethook(_cb_timer_timeout);
+    
     rt_interrupt_enter_sethook(_cb_irq_enter);
     rt_interrupt_leave_sethook(_cb_irq_leave);
     
