@@ -61,7 +61,10 @@ static U64 _cbGetTime(void)
 {
     return (U64)(rt_tick_get() * 1000 / RT_TICK_PER_SECOND);
 }
-
+static void _cb_timer_timeout(rt_timer_t t)
+{
+    SEGGER_SYSVIEW_RecordEnterTimer((rt_uint32_t)t);
+}
 static void _cbSendTaskInfo(const rt_thread_t thread)
 {
     SEGGER_SYSVIEW_TASKINFO Info;
@@ -118,7 +121,15 @@ static void _cb_scheduler(rt_thread_t from, rt_thread_t to)
     if(to == tidle)
         SEGGER_SYSVIEW_OnIdle();
     else
-        SEGGER_SYSVIEW_OnTaskStartExec((unsigned)to);
+    {
+        if(rt_interrupt_get_nest())
+        {
+            SEGGER_SYSVIEW_OnTaskStartReady((unsigned)to);
+            SEGGER_SYSVIEW_RecordEnterISR();
+        }
+        else
+            SEGGER_SYSVIEW_OnTaskStartExec((unsigned)to);
+    }
 }
 
 static void _cb_irq_enter(void)
@@ -142,7 +153,11 @@ static void _cb_irq_leave(void)
     else
         SEGGER_SYSVIEW_OnTaskStartExec((unsigned)current);
 }
-
+static void _cb_thread_inited(rt_thread_t thread)
+{
+    SEGGER_SYSVIEW_OnTaskCreate((rt_uint32_t)thread);
+    _cbSendTaskInfo((rt_thread_t)thread);
+}
 static void _cb_object_attach(struct rt_object* object)
 {
     switch(object->type)
@@ -160,7 +175,7 @@ static void _cb_object_detach(struct rt_object* object)
     switch(object->type)
     {
     case RT_Object_Class_Thread:
-        SEGGER_SYSVIEW_OnTaskStopExec();
+        SEGGER_SYSVIEW_OnTaskTerminate((unsigned)object);
         break;
     default:
         break;
@@ -269,9 +284,11 @@ static int rt_trace_init(void)
     
     rt_thread_suspend_sethook(_cb_thread_suspend);
     rt_thread_resume_sethook(_cb_thread_resume);
-
+    rt_thread_inited_sethook(_cb_thread_inited);
     rt_scheduler_sethook(_cb_scheduler);
 
+    rt_timer_timeout_sethook(_cb_timer_timeout);
+    
     rt_interrupt_enter_sethook(_cb_irq_enter);
     rt_interrupt_leave_sethook(_cb_irq_leave);
     
