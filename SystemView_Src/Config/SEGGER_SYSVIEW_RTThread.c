@@ -159,18 +159,20 @@ static void _cb_thread_inited(rt_thread_t thread)
     SEGGER_SYSVIEW_OnTaskCreate((rt_uint32_t)thread);
     _cbSendTaskInfo((rt_thread_t)thread);
 }
-static void _cb_object_attach(struct rt_object *object)
-{
-    switch (object->type)
-    {
-    case RT_Object_Class_Thread:
-        SEGGER_SYSVIEW_OnTaskCreate((unsigned)object);
-        _cbSendTaskInfo((rt_thread_t)object);
-        break;
-    default:
-        break;
-    }
-}
+
+//static void _cb_object_attach(struct rt_object* object)
+//{
+//    switch(object->type & (~RT_Object_Class_Static))
+//    {
+//    case RT_Object_Class_Thread:
+//        SEGGER_SYSVIEW_OnTaskCreate((unsigned)object);
+//        _cbSendTaskInfo((rt_thread_t)object);
+//        break;
+//    default:
+//        break;
+//    }
+//}
+
 static void _cb_object_detach(struct rt_object *object)
 {
     switch (object->type)
@@ -277,7 +279,7 @@ static int rt_trace_init(void)
     SEGGER_SYSVIEW_Conf();
 
     // register hooks
-    rt_object_attach_sethook(_cb_object_attach);
+    //rt_object_attach_sethook(_cb_object_attach);
     rt_object_detach_sethook(_cb_object_detach);
     rt_object_trytake_sethook(_cb_object_trytake);
     rt_object_take_sethook(_cb_object_take);
