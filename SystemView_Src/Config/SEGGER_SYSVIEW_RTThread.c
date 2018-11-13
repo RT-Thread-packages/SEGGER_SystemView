@@ -175,7 +175,7 @@ static void _cb_thread_inited(rt_thread_t thread)
 
 static void _cb_object_detach(struct rt_object *object)
 {
-    switch (object->type)
+    switch (object->type & (~RT_Object_Class_Static))
     {
     case RT_Object_Class_Thread:
         SEGGER_SYSVIEW_OnTaskTerminate((unsigned)object);
