@@ -52,6 +52,10 @@ Revision: $Rev: 3745 $
 #include "SEGGER_SYSVIEW.h"
 #include "SEGGER_RTT.h"
 
+#if (RT_VERSION * 100 + RT_SUBVERSION * 10 + RT_REVISION) > 310L
+    #error "This version SystemView only supports below 3.1.0 of RT-Thread, please select a higher level version SystemView!"
+#endif
+
 #ifndef PKG_USING_SYSTEMVIEW
     #error "SystemView is only works when feature PKG_USING_SYSTEMVIEW is enable."
 #endif
