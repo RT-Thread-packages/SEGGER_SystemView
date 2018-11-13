@@ -52,8 +52,8 @@ Revision: $Rev: 3745 $
 #include "SEGGER_SYSVIEW.h"
 #include "SEGGER_RTT.h"
 
-#if (RT_VERSION * 100 + RT_SUBVERSION * 10 + RT_REVISION) > 310L
-    #error "This version SystemView only supports below 3.1.0 of RT-Thread, please select a higher level version SystemView!"
+#if !((RT_VERSION * 100 + RT_SUBVERSION * 10 + RT_REVISION) > 310L)
+    #error "This version SystemView only supports above 3.1.0 of RT-Thread, please select a lower version SystemView!"
 #endif
 
 #ifndef PKG_USING_SYSTEMVIEW
@@ -65,10 +65,17 @@ static U64 _cbGetTime(void)
 {
     return (U64)(rt_tick_get() * 1000 / RT_TICK_PER_SECOND);
 }
-static void _cb_timer_timeout(rt_timer_t t)
+
+static void _cb_timer_enter(rt_timer_t t)
 {
     SEGGER_SYSVIEW_RecordEnterTimer((rt_uint32_t)t);
 }
+
+static void _cb_timer_exit(rt_timer_t t)
+{
+    SEGGER_SYSVIEW_RecordExitTimer();
+}
+
 static void _cbSendTaskInfo(const rt_thread_t thread)
 {
     SEGGER_SYSVIEW_TASKINFO Info;
@@ -294,7 +301,8 @@ static int rt_trace_init(void)
     rt_thread_inited_sethook(_cb_thread_inited);
     rt_scheduler_sethook(_cb_scheduler);
 
-    rt_timer_timeout_sethook(_cb_timer_timeout);
+    rt_timer_enter_sethook(_cb_timer_enter);
+    rt_timer_exit_sethook(_cb_timer_exit);
 
     rt_interrupt_enter_sethook(_cb_irq_enter);
     rt_interrupt_leave_sethook(_cb_irq_leave);
