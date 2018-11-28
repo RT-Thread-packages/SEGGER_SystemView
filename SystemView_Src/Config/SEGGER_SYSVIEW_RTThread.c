@@ -52,8 +52,12 @@ Revision: $Rev: 3745 $
 #include "SEGGER_SYSVIEW.h"
 #include "SEGGER_RTT.h"
 
+#if !((RT_VERSION * 100 + RT_SUBVERSION * 10 + RT_REVISION) > 310L)
+    #error "This version SystemView only supports above 3.1.0 of RT-Thread, please select a lower version SystemView!"
+#endif
+
 #ifndef PKG_USING_SYSTEMVIEW
-#error "SystemView is only works when feature PKG_USING_SYSTEMVIEW is enable."
+    #error "SystemView is only works when feature PKG_USING_SYSTEMVIEW is enable."
 #endif
 static rt_thread_t tidle;
 
@@ -61,10 +65,17 @@ static U64 _cbGetTime(void)
 {
     return (U64)(rt_tick_get() * 1000 / RT_TICK_PER_SECOND);
 }
-static void _cb_timer_timeout(rt_timer_t t)
+
+static void _cb_timer_enter(rt_timer_t t)
 {
     SEGGER_SYSVIEW_RecordEnterTimer((rt_uint32_t)t);
 }
+
+static void _cb_timer_exit(rt_timer_t t)
+{
+    SEGGER_SYSVIEW_RecordExitTimer();
+}
+
 static void _cbSendTaskInfo(const rt_thread_t thread)
 {
     SEGGER_SYSVIEW_TASKINFO Info;
@@ -84,9 +95,9 @@ static void _cbSendTaskInfo(const rt_thread_t thread)
 
 static void _cbSendTaskList(void)
 {
-    struct rt_thread* thread;
-    struct rt_list_node* node;
-    struct rt_list_node* list;
+    struct rt_thread *thread;
+    struct rt_list_node *node;
+    struct rt_list_node *list;
     struct rt_object_information *info;
 
     info = rt_object_get_information(RT_Object_Class_Thread);
@@ -95,11 +106,11 @@ static void _cbSendTaskList(void)
     tidle = rt_thread_idle_gethandler();
 
     rt_enter_critical();
-    for(node = list->next; node != list; node = node->next)
+    for (node = list->next; node != list; node = node->next)
     {
         thread = rt_list_entry(node, struct rt_thread, list);
         /* skip idle thread */
-        if(thread != tidle)
+        if (thread != tidle)
             _cbSendTaskInfo(thread);
     }
     rt_exit_critical();
@@ -118,11 +129,11 @@ static void _cb_thread_suspend(rt_thread_t thread)
 static void _cb_scheduler(rt_thread_t from, rt_thread_t to)
 {
     SEGGER_SYSVIEW_OnTaskStopReady((unsigned)from, 0);
-    if(to == tidle)
+    if (to == tidle)
         SEGGER_SYSVIEW_OnIdle();
     else
     {
-        if(rt_interrupt_get_nest())
+        if (rt_interrupt_get_nest())
         {
             SEGGER_SYSVIEW_OnTaskStartReady((unsigned)to);
             SEGGER_SYSVIEW_RecordEnterISR();
@@ -140,7 +151,7 @@ static void _cb_irq_enter(void)
 static void _cb_irq_leave(void)
 {
     rt_thread_t current;
-    if(rt_interrupt_get_nest())
+    if (rt_interrupt_get_nest())
     {
         SEGGER_SYSVIEW_RecordExitISR();
         return;
@@ -148,31 +159,34 @@ static void _cb_irq_leave(void)
 
     SEGGER_SYSVIEW_RecordExitISRToScheduler();
     current = rt_thread_self();
-    if(current == tidle)
+    if (current == tidle)
         SEGGER_SYSVIEW_OnIdle();
     else
         SEGGER_SYSVIEW_OnTaskStartExec((unsigned)current);
 }
+
 static void _cb_thread_inited(rt_thread_t thread)
 {
     SEGGER_SYSVIEW_OnTaskCreate((rt_uint32_t)thread);
     _cbSendTaskInfo((rt_thread_t)thread);
 }
-static void _cb_object_attach(struct rt_object* object)
+
+//static void _cb_object_attach(struct rt_object* object)
+//{
+//    switch(object->type & (~RT_Object_Class_Static))
+//    {
+//    case RT_Object_Class_Thread:
+//        SEGGER_SYSVIEW_OnTaskCreate((unsigned)object);
+//        _cbSendTaskInfo((rt_thread_t)object);
+//        break;
+//    default:
+//        break;
+//    }
+//}
+
+static void _cb_object_detach(struct rt_object *object)
 {
-    switch(object->type)
-    {
-    case RT_Object_Class_Thread:
-        SEGGER_SYSVIEW_OnTaskCreate((unsigned)object);
-        _cbSendTaskInfo((rt_thread_t)object);
-        break;
-    default:
-        break;
-    }
-}
-static void _cb_object_detach(struct rt_object* object)
-{
-    switch(object->type)
+    switch (object->type & (~RT_Object_Class_Static))
     {
     case RT_Object_Class_Thread:
         SEGGER_SYSVIEW_OnTaskTerminate((unsigned)object);
@@ -182,18 +196,18 @@ static void _cb_object_detach(struct rt_object* object)
     }
 }
 
-void SEGGER_SYSVIEW_RecordObject(unsigned EventID, struct rt_object *object) 
+void SEGGER_SYSVIEW_RecordObject(unsigned EventID, struct rt_object *object)
 {
-	U8  aPacket[SEGGER_SYSVIEW_INFO_SIZE + 4 * SEGGER_SYSVIEW_QUANTA_U32];
-	U8* pPayload;
+    U8  aPacket[SEGGER_SYSVIEW_INFO_SIZE + 4 * SEGGER_SYSVIEW_QUANTA_U32];
+    U8 *pPayload;
 
-	pPayload = SEGGER_SYSVIEW_PREPARE_PACKET(aPacket);				  		// Prepare the packet for SystemView
-	pPayload = SEGGER_SYSVIEW_EncodeString(pPayload, object->name, RT_NAME_MAX);	// Add object name
+    pPayload = SEGGER_SYSVIEW_PREPARE_PACKET(aPacket);                      // Prepare the packet for SystemView
+    pPayload = SEGGER_SYSVIEW_EncodeString(pPayload, object->name, RT_NAME_MAX);    // Add object name
 
     if ((object->type & (~RT_Object_Class_Static)) == RT_Object_Class_Event)
         pPayload = SEGGER_SYSVIEW_EncodeU32(pPayload, ((rt_event_t)object)->set);
-    
-	SEGGER_SYSVIEW_SendPacket(&aPacket[0], pPayload, EventID);			  	// Send the packet
+
+    SEGGER_SYSVIEW_SendPacket(&aPacket[0], pPayload, EventID);              // Send the packet
 }
 
 static void _cb_object_trytake(struct rt_object *object)
@@ -217,7 +231,6 @@ static void _cb_object_trytake(struct rt_object *object)
         break;
     }
 }
-
 
 static void _cb_object_take(struct rt_object *object)
 {
@@ -264,7 +277,8 @@ static void _cb_object_put(struct rt_object *object)
 }
 
 // Services provided to SYSVIEW by RT-Thread
-const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI = {
+const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI =
+{
     _cbGetTime, _cbSendTaskList,
 };
 
@@ -272,28 +286,29 @@ const SEGGER_SYSVIEW_OS_API SYSVIEW_X_OS_TraceAPI = {
 static int rt_trace_init(void)
 {
     tidle = rt_thread_idle_gethandler();
-    
+
     SEGGER_SYSVIEW_Conf();
-    
+
     // register hooks
-    rt_object_attach_sethook(_cb_object_attach);
+    //rt_object_attach_sethook(_cb_object_attach);
     rt_object_detach_sethook(_cb_object_detach);
     rt_object_trytake_sethook(_cb_object_trytake);
     rt_object_take_sethook(_cb_object_take);
     rt_object_put_sethook(_cb_object_put);
-    
+
     rt_thread_suspend_sethook(_cb_thread_suspend);
     rt_thread_resume_sethook(_cb_thread_resume);
     rt_thread_inited_sethook(_cb_thread_inited);
     rt_scheduler_sethook(_cb_scheduler);
 
-    rt_timer_timeout_sethook(_cb_timer_timeout);
-    
+    rt_timer_enter_sethook(_cb_timer_enter);
+    rt_timer_exit_sethook(_cb_timer_exit);
+
     rt_interrupt_enter_sethook(_cb_irq_enter);
     rt_interrupt_leave_sethook(_cb_irq_leave);
-    
+
     rt_kprintf("RTT Control Block Detection Address is 0x%x\n", &_SEGGER_RTT);
-    
+
     return 0;
 }
 INIT_COMPONENT_EXPORT(rt_trace_init);
@@ -304,6 +319,6 @@ int rtt_show_address(int argc, char **argv)
     return RT_EOK;
 }
 #ifdef FINSH_USING_MSH
-FINSH_FUNCTION_EXPORT_ALIAS(rtt_show_address, __cmd_rtt_show_address, Show RTT Control Block Address.);
+    FINSH_FUNCTION_EXPORT_ALIAS(rtt_show_address, __cmd_rtt_show_address, Show RTT Control Block Address.);
 #endif
 /*************************** End of file ****************************/
