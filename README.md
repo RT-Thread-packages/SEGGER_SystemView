@@ -1,4 +1,7 @@
 # segger_debug
+
+[中文页](README_ZH.md) | English
+
 segger debug utils, such as SEGGER's Real Time Transfer, SEGGER SystemView porting.
 
 ##How to use the Segger SystemView trace componment
@@ -6,16 +9,24 @@ segger debug utils, such as SEGGER's Real Time Transfer, SEGGER SystemView porti
 By Arda.Fu 2016.8.10
 
 ### 1. Copy description file
+
 Copy the 'description\SYSVIEW_RTThread.txt' to folder '%SystemView_Install_Folder%\Description\'.
+
 ### 2. Copy source file
+
 Copy the folder 'trace' to folder '%RTT_ROOT%\components\trace'.
+
 ### 3. Enable trace componment
+
 Enable `RT_USING_HOOK` and add `RT_USING_TRACE` define in your bsp's rtconfig.h
+
 ```c
 // <bool name="RT_USING_TRACE" description="Enable trace" default="true" />
 #define RT_USING_TRACE
 ```
+
 ### 4. Connect to target board debug interface
+
 Segger SystemView only support Segger J-Link and Segger J-Link OB. If you using the origin development boards from vendor, you can upgrade the on board debugger to J-Link OB.
 
 * For ST ST-Link, here is the [ST-Link upgrade utility download page](https://www.segger.com/jlink-st-link.html)
