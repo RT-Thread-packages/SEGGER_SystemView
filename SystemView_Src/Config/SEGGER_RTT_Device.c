@@ -90,7 +90,7 @@ int hw_segger_init(void)
 {
     static const struct rt_uart_ops segger_uart_ops =
     {
-        NULL,
+        RT_NULL,
         segger_control,
         segger_putc,
         segger_getc,
@@ -103,7 +103,7 @@ int hw_segger_init(void)
     rt_hw_serial_register(&segger_serial,
                           PKG_SERIAL_DEVICE_NAME,
                           RT_DEVICE_FLAG_RDWR  | RT_DEVICE_FLAG_INT_RX,
-                          NULL);
+                          RT_NULL);
 
     return 0;
 }
