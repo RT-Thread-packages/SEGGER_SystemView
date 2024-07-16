@@ -77,19 +77,23 @@ Revision: $Rev: 6249 $
 //
 #define SEGGER_SYSVIEW_CORE_OTHER   0
 #define SEGGER_SYSVIEW_CORE_CM0     1 // Cortex-M0/M0+/M1
-#define SEGGER_SYSVIEW_CORE_CM3     2 // Cortex-M3/M4/M7
+#define SEGGER_SYSVIEW_CORE_CM3     2 // Cortex-M3/M4/M7/M85
 #define SEGGER_SYSVIEW_CORE_RX      3 // Renesas RX
 
-#if (defined __SES_ARM) || (defined __CROSSWORKS_ARM) || (defined __GNUC__)
-  #ifdef __ARM_ARCH_6M__
+#if (defined __SES_ARM) || (defined __CROSSWORKS_ARM) || (defined __GNUC__) || (defined __clang__)
+  #if (defined __ARM_ARCH_6M__) || (defined __ARM_ARCH_8M_BASE__)
     #define SEGGER_SYSVIEW_CORE SEGGER_SYSVIEW_CORE_CM0
-  #elif (defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__))
+  #elif (defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_8M_MAIN__)) || (defined __ARM_ARCH_8_1M_MAIN__)
     #define SEGGER_SYSVIEW_CORE SEGGER_SYSVIEW_CORE_CM3
   #endif
 #elif defined(__ICCARM__)
-  #if (defined (__ARM6M__) && (__CORE__ == __ARM6M__))
+  #if (defined (__ARM6M__)          && (__CORE__ == __ARM6M__))          \
+   || (defined (__ARM8M_BASELINE__) && (__CORE__ == __ARM8M_BASELINE__))
     #define SEGGER_SYSVIEW_CORE SEGGER_SYSVIEW_CORE_CM0
-  #elif ((defined (__ARM7M__) && (__CORE__ == __ARM7M__)) || (defined (__ARM7EM__) && (__CORE__ == __ARM7EM__)))
+  #elif (defined (__ARM7EM__)         && (__CORE__ == __ARM7EM__))         \
+     || (defined (__ARM7M__)          && (__CORE__ == __ARM7M__))          \
+     || (defined (__ARM8M_MAINLINE__) && (__CORE__ == __ARM8M_MAINLINE__)) \
+     || (defined (__ARM8M_MAINLINE__) && (__CORE__ == __ARM8M_MAINLINE__))
     #define SEGGER_SYSVIEW_CORE SEGGER_SYSVIEW_CORE_CM3
   #endif
 #elif defined(__CC_ARM)

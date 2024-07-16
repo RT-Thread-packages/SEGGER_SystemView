@@ -97,8 +97,9 @@ int hw_segger_init(void)
     };
 
     segger_serial.ops = &segger_uart_ops;
+#ifdef RT_USING_SERIAL_V1
     segger_serial.config.bufsz = RT_SERIAL_RB_BUFSZ;
-
+#endif
     /* register segger rtt as serial device */
     rt_hw_serial_register(&segger_serial,
                           PKG_SERIAL_DEVICE_NAME,
