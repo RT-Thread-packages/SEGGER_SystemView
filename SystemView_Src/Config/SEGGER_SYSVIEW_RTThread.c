@@ -52,10 +52,6 @@ Revision: $Rev: 3745 $
 #include "SEGGER_SYSVIEW.h"
 #include "SEGGER_RTT.h"
 
-#if !((RT_VERSION * 100 + RT_SUBVERSION * 10 + RT_REVISION) > 310L)
-    #error "This version SystemView only supports above 3.1.0 of RT-Thread, please select a lower version SystemView!"
-#endif
-
 #ifndef PKG_USING_SYSTEMVIEW
     #error "SystemView is only works when feature PKG_USING_SYSTEMVIEW is enable."
 #endif
@@ -83,8 +79,11 @@ static void _cbSendTaskInfo(const rt_thread_t thread)
     rt_enter_critical();
     rt_memset(&Info, 0, sizeof(Info));
     Info.TaskID = (U32)thread;
-
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 0, 1))
+    Info.sName = thread->parent.name;
+#else
     Info.sName = thread->name;
+#endif
     Info.Prio = thread->current_priority;
     Info.StackBase = (U32)thread->stack_addr;
     Info.StackSize = thread->stack_size;
@@ -108,7 +107,11 @@ static void _cbSendTaskList(void)
     rt_enter_critical();
     for (node = list->next; node != list; node = node->next)
     {
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 0, 1))
+        thread = rt_list_entry(node, struct rt_thread, tlist);
+#else
         thread = rt_list_entry(node, struct rt_thread, list);
+#endif
         /* skip idle thread */
         if (thread != tidle)
             _cbSendTaskInfo(thread);
@@ -170,6 +173,9 @@ static void _cb_thread_inited(rt_thread_t thread)
     SEGGER_SYSVIEW_OnTaskCreate((rt_uint32_t)thread);
     _cbSendTaskInfo((rt_thread_t)thread);
 }
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 1, 0))
+RT_OBJECT_HOOKLIST_DEFINE_NODE(rt_thread_inited, inited_node, _cb_thread_inited);
+#endif
 
 //static void _cb_object_attach(struct rt_object* object)
 //{
@@ -298,7 +304,11 @@ static int rt_trace_init(void)
 
     rt_thread_suspend_sethook(_cb_thread_suspend);
     rt_thread_resume_sethook(_cb_thread_resume);
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 1, 0))
+    rt_thread_inited_sethook(&inited_node);
+#else
     rt_thread_inited_sethook(_cb_thread_inited);
+#endif
     rt_scheduler_sethook(_cb_scheduler);
 
     rt_timer_enter_sethook(_cb_timer_enter);
