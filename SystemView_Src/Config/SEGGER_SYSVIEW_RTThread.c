@@ -112,7 +112,7 @@ static void _cbSendTaskList(void)
     for (node = list->next; node != list; node = node->next)
     {
 #if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 2, 0))
-			  thread = RT_THREAD_LIST_NODE_ENTRY(node);
+        thread = RT_THREAD_LIST_NODE_ENTRY(node);
 #elif defined(RT_VERSION_CHECK) &&(RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 0, 1))
         thread = rt_list_entry(node, struct rt_thread, tlist);
 #else
