@@ -99,7 +99,6 @@ static void _cbSendTaskInfo(const rt_thread_t thread)
 static void _cbSendTaskList(void)
 {
     struct rt_thread *thread;
-    struct rt_thread *thread2;
     struct rt_list_node *node;
     struct rt_list_node *list;
     struct rt_object_information *info;
@@ -121,11 +120,7 @@ static void _cbSendTaskList(void)
 #endif
         /* skip idle thread */
         if (thread != tidle)
-				{
-            thread2 = (struct rt_thread *)thread+0x00000020;
-            rt_kprintf("test-2 thread=%p 2=0x%p \n", thread, thread2);
-            _cbSendTaskInfo(thread2);
-				}
+            _cbSendTaskInfo(thread);
     }
     rt_exit_critical();
 }
