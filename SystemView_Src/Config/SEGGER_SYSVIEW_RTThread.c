@@ -120,7 +120,7 @@ static void _cbSendTaskList(void)
 #endif
         /* skip idle thread */
 #if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 2, 0))
-			_cbSendTaskInfo((int)(thread+0x20));  //ref SEGGER_SystemView/issues/9
+            _cbSendTaskInfo((int)(thread+0x20));  //ref SEGGER_SystemView/issues/9
 #else
             _cbSendTaskInfo(thread);
 #endif
