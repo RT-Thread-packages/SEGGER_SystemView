@@ -84,7 +84,11 @@ static void _cbSendTaskInfo(const rt_thread_t thread)
 #else
     Info.sName = thread->name;
 #endif
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 2, 0))
+    Info.Prio = RT_SCHED_PRIV(thread).current_priority;
+#else
     Info.Prio = thread->current_priority;
+#endif
     Info.StackBase = (U32)thread->stack_addr;
     Info.StackSize = thread->stack_size;
 
@@ -95,6 +99,7 @@ static void _cbSendTaskInfo(const rt_thread_t thread)
 static void _cbSendTaskList(void)
 {
     struct rt_thread *thread;
+    struct rt_thread *thread2;
     struct rt_list_node *node;
     struct rt_list_node *list;
     struct rt_object_information *info;
@@ -107,14 +112,20 @@ static void _cbSendTaskList(void)
     rt_enter_critical();
     for (node = list->next; node != list; node = node->next)
     {
-#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 0, 1))
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 2, 0))
+			  thread = RT_THREAD_LIST_NODE_ENTRY(node);
+#elif defined(RT_VERSION_CHECK) &&(RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 0, 1))
         thread = rt_list_entry(node, struct rt_thread, tlist);
 #else
         thread = rt_list_entry(node, struct rt_thread, list);
 #endif
         /* skip idle thread */
         if (thread != tidle)
-            _cbSendTaskInfo(thread);
+				{
+            thread2 = (struct rt_thread *)thread+0x00000020;
+            rt_kprintf("test-2 thread=%p 2=0x%p \n", thread, thread2);
+            _cbSendTaskInfo(thread2);
+				}
     }
     rt_exit_critical();
 }
