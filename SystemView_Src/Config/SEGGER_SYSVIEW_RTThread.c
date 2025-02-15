@@ -119,8 +119,11 @@ static void _cbSendTaskList(void)
         thread = rt_list_entry(node, struct rt_thread, list);
 #endif
         /* skip idle thread */
-        if (thread != tidle)
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 2, 0))
+			_cbSendTaskInfo((int)(thread+0x20));  //ref SEGGER_SystemView/issues/9
+#else
             _cbSendTaskInfo(thread);
+#endif
     }
     rt_exit_critical();
 }
