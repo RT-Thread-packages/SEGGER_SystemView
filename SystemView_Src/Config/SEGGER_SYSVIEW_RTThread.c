@@ -84,7 +84,11 @@ static void _cbSendTaskInfo(const rt_thread_t thread)
 #else
     Info.sName = thread->name;
 #endif
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 1, 0))
+    Info.Prio = RT_SCHED_PRIV(thread).current_priority;
+#else
     Info.Prio = thread->current_priority;
+#endif
     Info.StackBase = (U32)thread->stack_addr;
     Info.StackSize = thread->stack_size;
 
@@ -107,14 +111,19 @@ static void _cbSendTaskList(void)
     rt_enter_critical();
     for (node = list->next; node != list; node = node->next)
     {
-#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 0, 1))
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 1, 0))
+        thread = RT_THREAD_LIST_NODE_ENTRY(node);
+#elif defined(RT_VERSION_CHECK) &&(RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 0, 1))
         thread = rt_list_entry(node, struct rt_thread, tlist);
 #else
         thread = rt_list_entry(node, struct rt_thread, list);
 #endif
         /* skip idle thread */
-        if (thread != tidle)
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 1, 0))
+            _cbSendTaskInfo((int)(thread + 0x20));  //ref SEGGER_SystemView/issues/9
+#else
             _cbSendTaskInfo(thread);
+#endif
     }
     rt_exit_critical();
 }
