@@ -143,7 +143,7 @@ static void _cb_scheduler(rt_thread_t from, rt_thread_t to)
         if (rt_interrupt_get_nest())
         {
             SEGGER_SYSVIEW_OnTaskStartReady((unsigned)to);
-            SEGGER_SYSVIEW_RecordEnterISR();
+            //SEGGER_SYSVIEW_RecordEnterISR();
         }
         else
             SEGGER_SYSVIEW_OnTaskStartExec((unsigned)to);
@@ -158,11 +158,11 @@ static void _cb_irq_enter(void)
 static void _cb_irq_leave(void)
 {
     rt_thread_t current;
-    if (rt_interrupt_get_nest())
-    {
-        SEGGER_SYSVIEW_RecordExitISR();
-        return;
-    }
+    // if (rt_interrupt_get_nest())
+    // {
+    //     SEGGER_SYSVIEW_RecordExitISR();
+    //     return;
+    // }
 
     SEGGER_SYSVIEW_RecordExitISRToScheduler();
     current = rt_thread_self();
