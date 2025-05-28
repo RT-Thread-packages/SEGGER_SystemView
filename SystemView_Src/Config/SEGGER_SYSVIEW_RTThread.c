@@ -98,9 +98,9 @@ static void _cbSendTaskInfo(const rt_thread_t thread)
 
 static void _cbSendTaskList(void)
 {
-    struct rt_thread *thread;
-    struct rt_list_node *node;
-    struct rt_list_node *list;
+    struct rt_thread* thread;
+    struct rt_list_node* node;
+    struct rt_list_node* list;
     struct rt_object_information *info;
 
     info = rt_object_get_information(RT_Object_Class_Thread);
@@ -109,21 +109,16 @@ static void _cbSendTaskList(void)
     tidle = rt_thread_idle_gethandler();
 
     rt_enter_critical();
-    for (node = list->next; node != list; node = node->next)
+    for(node = list->next; node != list; node = node->next)
     {
-#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 1, 0))
-        thread = RT_THREAD_LIST_NODE_ENTRY(node);
-#elif defined(RT_VERSION_CHECK) &&(RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 0, 1))
-        thread = rt_list_entry(node, struct rt_thread, tlist);
+#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 0, 1))
+        thread = (struct rt_thread *)rt_list_entry(node, struct rt_object, list);
 #else
         thread = rt_list_entry(node, struct rt_thread, list);
 #endif
         /* skip idle thread */
-#if defined(RT_VERSION_CHECK) && (RTTHREAD_VERSION >= RT_VERSION_CHECK(5, 1, 0))
-            _cbSendTaskInfo((int)(thread + 0x20));  //ref SEGGER_SystemView/issues/9
-#else
+        if(thread != tidle)
             _cbSendTaskInfo(thread);
-#endif
     }
     rt_exit_critical();
 }

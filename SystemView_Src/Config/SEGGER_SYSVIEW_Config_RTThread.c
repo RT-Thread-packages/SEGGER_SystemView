@@ -155,15 +155,28 @@ extern unsigned int SystemCoreClock;
 
 
 
-/*********************************************************************
-*
-*       Defines, fixed
-*
-**********************************************************************
-*/
-#define DWT_CTRL                  (*(volatile rt_uint32_t*) (0xE0001000uL))  // DWT Control Register
-#define NOCYCCNT_BIT              (1uL << 25)                           // Cycle counter support bit
-#define CYCCNTENA_BIT             (1uL << 0)                            // Cycle counter enable bit
+//==================== DWT & CoreDebug 地址定义 ====================//
+
+#define DWT_CTRL        (*(volatile unsigned int *)0xE0001000u)  // DWT Control Register
+#define DWT_CYCCNT      (*(volatile unsigned int *)0xE0001004u)  // DWT Cycle Counter Register
+#define DEMCR           (*(volatile unsigned int *)0xE000EDFCu)  // Debug Exception and Monitor Control Register
+
+//==================== 位定义 ====================//
+
+#define TRCENA_BIT      (1u << 24)   // DEMCR[24] = TRCENA: Trace enable
+#define CYCCNTENA_BIT   (1u << 0)    // DWT_CTRL[0] = CYCCNTENA: Cycle Counter Enable
+#define NOCYCCNT_BIT    (1u << 25)   // DWT_CTRL[25] = NOCYCCNT: Cycle Counter not present
+
+//==================== 启用 DWT Cycle Counter 的宏 ====================//
+
+#define ENABLE_DWT_CYCLE_COUNTER()             \
+    do {                                       \
+        DEMCR |= TRCENA_BIT;                   /* Enable trace */           \
+        if ((DWT_CTRL & NOCYCCNT_BIT) == 0) {  /* If CYCCNT is supported */ \
+            DWT_CYCCNT = 0;                    /* Clear counter */          \
+            DWT_CTRL |= CYCCNTENA_BIT;         /* Enable counter */         \
+        }                                      \
+    } while (0)
 
 /*********************************************************************
 *
@@ -198,11 +211,7 @@ void SEGGER_SYSVIEW_Conf(void) {
   //  The cycle counter must be activated in order
   //  to use time related functions.
   //
-  if ((DWT_CTRL & NOCYCCNT_BIT) == 0) {       // Cycle counter supported?
-    if ((DWT_CTRL & CYCCNTENA_BIT) == 0) {    // Cycle counter not enabled?
-      DWT_CTRL |= CYCCNTENA_BIT;              // Enable Cycle counter
-    }
-  }
+  ENABLE_DWT_CYCLE_COUNTER();  
 #endif
   SEGGER_SYSVIEW_Init(SYSVIEW_TIMESTAMP_FREQ, SYSVIEW_CPU_FREQ,
                       &SYSVIEW_X_OS_TraceAPI, _cbSendSystemDesc);
